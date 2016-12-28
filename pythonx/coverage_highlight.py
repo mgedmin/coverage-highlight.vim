@@ -164,7 +164,7 @@ def find_coverage_file_for(filename):
         where = os.path.dirname(where)
 
 
-def higlight(arg):
+def highlight(arg):
     if arg.endswith('.report'):
         parse_cover_file(arg)
     elif arg:

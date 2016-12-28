@@ -1,7 +1,7 @@
 coverage-highlight.vim
 ----------------------
 
-Vim plugin to higlight source code lines that lack test coverage.
+Vim plugin to highlight source code lines that lack test coverage.
 
 Currently only supports two different Python tools:
 

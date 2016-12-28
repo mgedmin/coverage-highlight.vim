@@ -5,7 +5,7 @@
 "
 " Overview
 " --------
-" Vim script to higlight Python code coverage report results.
+" Vim script to highlight Python code coverage report results.
 "
 " Installation
 " ------------
@@ -54,7 +54,7 @@ endif
 sign define NoCoverage text=>> texthl=NoCoverage linehl=NoCoverage
 
 command! -nargs=* -complete=file -bar HighlightCoverage
-            \ call coverage_highlight#highligt(<q-args>)
+            \ call coverage_highlight#highlight(<q-args>)
 
 command! -bar HighlightCoverageOff
             \ call coverage_highlight#off()
