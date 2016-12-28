@@ -12,5 +12,6 @@ function coverage_highlight#highlight(arg)
 endf
 
 function coverage_highlight#off()
-    sign unplace *  " TODO: do it right!
+    " TODO: do it right!
+    sign unplace *
 endf
