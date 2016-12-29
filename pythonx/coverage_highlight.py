@@ -13,13 +13,19 @@ def debug(msg):
         print(msg)
 
 
+def error(msg):
+    vim.command("echohl ErrorMsg")
+    vim.command("echomsg '%s'" % msg.replace("'", "''"))
+    vim.command("echohl None")
+
+
 def filename2module(filename):
     pkg = os.path.splitext(os.path.abspath(filename))[0]
     root = os.path.dirname(pkg)
     while os.path.exists(os.path.join(root, '__init__.py')):
         new_root = os.path.dirname(root)
         if new_root == root:
-            break # prevent infinite loops in crazy systems
+            break  # prevent infinite loops in crazy systems
         else:
             root = new_root
     pkg = pkg[len(root) + len(os.path.sep):].replace('/', '.')
@@ -38,7 +44,7 @@ def find_coverage_report(modulename):
     while not os.path.exists(os.path.join(root, filename)):
         new_root = os.path.dirname(root)
         if new_root == root:
-            break # prevent infinite loops in crazy systems
+            break  # prevent infinite loops in crazy systems
         else:
             root = new_root
     return os.path.join(root, filename)
@@ -219,6 +225,4 @@ def highlight(arg):
                 print("Using %s" % filename)
                 parse_cover_file(filename)
             else:
-                vim.command("echohl ErrorMsg")
-                vim.command("echomsg 'Neither .coverage nor %s found.'" % filename)
-                vim.command("echohl None")
+                error('Neither .coverage nor %s found.' % filename)
