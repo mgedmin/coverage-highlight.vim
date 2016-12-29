@@ -3,6 +3,9 @@ coverage-highlight.vim
 
 Vim plugin to highlight source code lines that lack test coverage.
 
+.. image:: screenshot.png
+  :alt: Screenshot
+
 Currently only supports two different Python tools:
 
 - coverage.py
@@ -13,7 +16,7 @@ Usage
 -----
 
 1. Generate some coverage data (a ``.coverage`` file) by running your tests
-with ``coverage run`` (or by using the appropriate test runner plugin).
+   with ``coverage run`` (or by using the appropriate test runner plugin).
 
 2. Open a source file in vim
 
@@ -55,7 +58,7 @@ Settings
 --------
 
 g:coverage_script
-    Default: autodetect
+    Default: "" (which means autodetect)
 
     Name of the script that can produce reports.  Example ::
 
@@ -70,3 +73,10 @@ Requirements
 ------------
 
 Vim with Python/Python3 support.
+
+
+Copyright
+---------
+
+``coverage-highlight.vim`` was written by Marius Gedminas <marius@gedmin.as>.
+Licence: MIT.
