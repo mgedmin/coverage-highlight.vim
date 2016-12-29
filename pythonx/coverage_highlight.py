@@ -46,14 +46,29 @@ def find_coverage_report(modulename):
 
 class Signs(object):
 
-    def __init__(self):
-        self.signid = 0
-        self.bufferid = vim.eval('bufnr("%")')
+    first_sign_id = 17474  # random number to avoid clashes with other plugins
+
+    def __init__(self, buf=None):
+        if buf is None:
+            buf = vim.current.buffer
+        self.bufferid = buf.number
+        if 'coverage_signs' not in buf.vars:
+            buf.vars['coverage_signs'] = []
+        self.signs = buf.vars['coverage_signs']
+        self.signid = max(self.signs) if self.signs else self.first_sign_id
 
     def place(self, lineno):
         self.signid += 1
-        cmd = "sign place %d line=%d name=NoCoverage buffer=%s" % (self.signid, lineno, self.bufferid)
+        cmd = "sign place %d line=%d name=NoCoverage buffer=%s" % (
+                    self.signid, lineno, self.bufferid)
         vim.command(cmd)
+        self.signs.extend([self.signid])
+
+    def clear(self):
+        for sign in self.signs:
+            cmd = "sign unplace %d" % sign
+            vim.command(cmd)
+        del self.signs[:]
 
 
 def lazyredraw(fn):
@@ -164,7 +179,13 @@ def find_coverage_file_for(filename):
         where = os.path.dirname(where)
 
 
+def clear():
+    signs = Signs()
+    signs.clear()
+
+
 def highlight(arg):
+    clear()
     if arg.endswith('.report'):
         parse_cover_file(arg)
     elif arg:
