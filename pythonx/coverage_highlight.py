@@ -76,6 +76,43 @@ class Signs(object):
             vim.command(cmd)
         del self.signs[:]
 
+    def __iter__(self):
+        info = vim.bindeval('getbufinfo("%")')[0]
+        for sign in info['signs']:
+            if sign['name'] == b'NoCoverage':
+                yield sign
+
+    def find_next_range(self, line):
+        signs = iter(self)
+        for sign in signs:
+            if sign['lnum'] == line:
+                line += 1
+            if sign['lnum'] > line:
+                break
+        else:
+            return None
+        first = last = sign['lnum']
+        for sign in signs:
+            if sign['lnum'] == last + 1:
+                last += 1
+        return first, last
+
+    def find_prev_range(self, line):
+        signs = iter(self)
+        prev_range = None
+        first = last = None
+        for sign in signs:
+            if last is None:
+                first = last = sign['lnum']
+            elif sign['lnum'] == last + 1:
+                last += 1
+            else:
+                prev_range = (first, last)
+                first = last = sign['lnum']
+            if sign['lnum'] >= line:
+                break
+        return prev_range
+
 
 def lazyredraw(fn):
     def wrapped(*args, **kw):
@@ -226,3 +263,33 @@ def highlight(arg):
                 parse_cover_file(filename)
             else:
                 error('Neither .coverage nor %s found.' % filename)
+
+
+def jump_to_next():
+    signs = Signs()
+    row, col = vim.current.window.cursor
+    next_range = signs.find_next_range(row)
+    if next_range is None:
+        print("No higlighted lines below cursor")
+        return
+    first, last = next_range
+    # jump to last line so it's visible, then jump back to 1st line
+    # (this does not always work the way I want but eh)
+    vim.command("normal! %dG" % last)
+    vim.command("normal! %dG" % first)
+    print("{}-{}".format(first, last) if first != last else first)
+
+
+def jump_to_prev():
+    signs = Signs()
+    row, col = vim.current.window.cursor
+    prev_range = signs.find_prev_range(row)
+    if prev_range is None:
+        print("No higlighted lines above cursor")
+        return
+    first, last = prev_range
+    # jump to first line so it's visible, then jump back to last line
+    # (this does not always work the way I want but eh)
+    vim.command("normal! %dG" % first)
+    vim.command("normal! %dG" % last)
+    print("{}-{}".format(first, last) if first != last else first)

@@ -13,3 +13,11 @@ endf
 function coverage_highlight#off()
     exec s:python "coverage_highlight.clear()"
 endf
+
+function coverage_highlight#next()
+    exec s:python "coverage_highlight.jump_to_next()"
+endf
+
+function coverage_highlight#prev()
+    exec s:python "coverage_highlight.jump_to_prev()"
+endf

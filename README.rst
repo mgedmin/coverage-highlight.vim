@@ -53,6 +53,12 @@ Commands
 :HighlightCoverageOff
     Turns off coverage highlighting
 
+:NextUncovered
+    Jump to the next uncovered range of source lines
+
+:PrevUncovered
+    Jump to the previous uncovered range of source lines
+
 
 Settings
 --------
@@ -67,6 +73,15 @@ g:coverage_script
     By default it looks for ``coverage`` in your PATH, and if not found,
     it looks for ``bin/coverage`` relative to the current working
     directory.
+
+
+Mappings
+--------
+
+You may want to add this to your ``.vimrc``::
+
+  noremap [C :<C-U>PrevUncovered<CR>
+  noremap ]C :<C-U>NextUncovered<CR>
 
 
 Requirements
