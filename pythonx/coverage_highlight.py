@@ -1,3 +1,9 @@
+"""
+" HACK to fore-reload it from vim with :source %
+let s:python = has('python3') ? 'python3' : 'python'
+execute s:python 'import sys; sys.modules.pop("coverage_highlight", None); import coverage_highlight'
+finish
+"""
 import os
 import shlex
 import subprocess
@@ -127,12 +133,11 @@ def lazyredraw(fn):
 
 @lazyredraw
 def parse_cover_file(filename):
-    lineno = 0
     signs = Signs()
-    for line in file(filename):
-        lineno += 1
-        if line.startswith('>>>>>>'):
-            signs.place(lineno)
+    with open(filename) as f:
+        for lineno, line in enumerate(f, 1):
+            if line.startswith('>>>>>>'):
+                signs.place(lineno)
 
 
 def parse_coverage_output(output, filename):
