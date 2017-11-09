@@ -6,7 +6,7 @@ Vim plugin to highlight source code lines that lack test coverage.
 .. image:: screenshot.png
   :alt: Screenshot
 
-Currently only supports two different Python tools:
+Currently supports only two different Python tools:
 
 - coverage.py
 - trace.py (obsolete)
@@ -73,6 +73,17 @@ g:coverage_script
     By default it looks for ``coverage`` in your PATH, and if not found,
     it looks for ``bin/coverage`` relative to the current working
     directory.
+
+
+Highligh groups
+---------------
+
+If you want to change the highlighting, add this to your ``.vimrc``:
+
+    highlight NoCoverage ctermbg=... guibg=...
+
+with the colors you want.  See vim's ``:help cterm-colors`` and
+``:help gui-colors`` for the color values to use.
 
 
 Mappings
