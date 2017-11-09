@@ -24,18 +24,19 @@ endf
 
 function! coverage_highlight#define_highlights()
     if &background == 'dark'
-        if &t_Co > 8
-            highlight default NoCoverage ctermbg=52 guibg=#5f0000
+        if &t_Co >= 256
+            highlight NoCoverageDefault ctermbg=52 guibg=#5f0000
         else
-            highlight default NoCoverage ctermbg=darkred guibg=#5f0000
+            highlight NoCoverageDefault ctermbg=darkred guibg=#5f0000
         endif
     else
-        if &t_Co > 8
-            highlight default NoCoverage ctermbg=224 guibg=#ffcccc
+        if &t_Co >= 256
+            highlight NoCoverageDefault ctermbg=224 guibg=#ffcccc
         else
-            highlight default NoCoverage ctermbg=gray guibg=#ffcccc
+            highlight NoCoverageDefault ctermbg=gray guibg=#ffcccc
         endif
     endif
+    highlight default link NoCoverage NoCoverageDefault
 endf
 
 call coverage_highlight#define_highlights()
