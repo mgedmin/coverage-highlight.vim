@@ -151,6 +151,9 @@ def parse_coverage_output(output, filename):
     # -------------------------------------------------------------------------
     # src/foo/bar/baz/qq/__init__     146    136     36      4    93%   170-177, 180-184
 
+    if not output and get_verbosity() >= 1:
+        print("Got no output!")
+        return
     last_line = output.splitlines()[-1]
     filename = os.path.relpath(filename)
     filename_no_ext = os.path.splitext(filename)[0]
