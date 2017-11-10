@@ -1,7 +1,6 @@
 """
 " HACK to fore-reload it from vim with :source %
-let s:python = has('python3') ? 'python3' : 'python'
-execute s:python 'import sys; sys.modules.pop("coverage_highlight", None); import coverage_highlight'
+pyx import sys; sys.modules.pop("coverage_highlight", None); import coverage_highlight
 finish
 """
 import os
@@ -31,7 +30,7 @@ def filename2module(filename):
     while os.path.exists(os.path.join(root, '__init__.py')):
         new_root = os.path.dirname(root)
         if new_root == root:
-            break  # prevent infinite loops in crazy systems
+            break  # prevent infinite loops in unlikely situations
         else:
             root = new_root
     pkg = pkg[len(root) + len(os.path.sep):].replace('/', '.')
@@ -69,10 +68,19 @@ class Signs(object):
         self.signs = buf.vars['coverage_signs']
         self.signid = max(self.signs) if self.signs else self.first_sign_id
 
+    @classmethod
+    def for_file(cls, filename):
+        for buf in vim.buffers:
+            try:
+                if os.path.samefile(buf.name, filename):
+                    return cls(buf)
+            except (OSError, IOError):
+                pass
+
     def place(self, lineno):
         self.signid += 1
         cmd = "sign place %d line=%d name=NoCoverage buffer=%s" % (
-                    self.signid, lineno, self.bufferid)
+            self.signid, lineno, self.bufferid)
         vim.command(cmd)
         self.signs.extend([self.signid])
 
@@ -183,6 +191,42 @@ def parse_coverage_output(output, filename):
         print(output)
 
 
+def parse_full_coverage_output(output):
+    if not output and get_verbosity() >= 1:
+        print("Got no output!")
+        return
+    # skip header
+    output = iter(output.splitlines())
+    for line in output:
+        if get_verbosity() >= 3:
+            print(line)
+        if line.startswith('--------'):
+            break
+    for line in output:
+        if get_verbosity() >= 3:
+            print(line)
+        if line.startswith('--------'):
+            break
+        filename = line.split()[0]
+        if not os.path.exists(filename):
+            # this is unexpected
+            if get_verbosity() >= 1:
+                print("Skipping %s: no such file" % filename)
+            continue
+        signs = Signs.for_file(filename)
+        if signs is None:
+            # Vim can't place signs on files that are not loaded into buffers
+            if get_verbosity() >= 1:
+                print("Skipping %s: not loaded in any buffer" % filename)
+            continue
+        if get_verbosity() >= 2:
+            print(line)
+        signs.clear()
+        missing = line.rpartition('%')[-1]
+        if missing and missing.strip():
+            parse_lines(missing, signs)
+
+
 @lazyredraw
 def parse_lines(formatted_list, signs):
     for item in formatted_list.split(', '):
@@ -230,6 +274,19 @@ def find_coverage_file_for(filename):
         where = os.path.dirname(where)
 
 
+def run_coverage_report(coverage_script, coverage_dir, args=[]):
+    print("Running %s report -m %s" % (os.path.relpath(coverage_script), ' '.join(args)))
+    if os.path.exists(coverage_script):
+        command = [coverage_script]
+    else:
+        command = shlex.split(coverage_script)
+    output = subprocess.Popen(command + ['report', '-m'] + args,
+                              stdout=subprocess.PIPE, cwd=coverage_dir).communicate()[0]
+    if not isinstance(output, str):
+        output = output.decode('UTF-8', 'replace')
+    return output
+
+
 def clear():
     signs = Signs()
     signs.clear()
@@ -253,15 +310,7 @@ def highlight(arg):
         coverage_dir = find_coverage_file_for(filename)
         if coverage_script and coverage_dir:
             relfilename = os.path.relpath(filename, coverage_dir)
-            print("Running %s report -m %s" % (os.path.relpath(coverage_script), relfilename))
-            if os.path.exists(coverage_script):
-                command = [coverage_script]
-            else:
-                command = shlex.split(coverage_script)
-            output = subprocess.Popen(command + ['report', '-m', relfilename],
-                                      stdout=subprocess.PIPE, cwd=coverage_dir).communicate()[0]
-            if not isinstance(output, str):
-                output = output.decode('UTF-8', 'replace')
+            output = run_coverage_report(coverage_script, coverage_dir, [relfilename])
             parse_coverage_output(output, relfilename)
         else:
             modulename = filename2module(filename)
@@ -271,6 +320,20 @@ def highlight(arg):
                 parse_cover_file(filename)
             else:
                 error('Neither .coverage nor %s found.' % filename)
+
+
+def highlight_all():
+    coverage_script = find_coverage_script()
+    if not coverage_script:
+        error("Could not find the 'coverage' script.")
+        return
+    filename = vim.current.buffer.name
+    coverage_dir = find_coverage_file_for(filename)
+    if not coverage_dir:
+        error('Could not find .coverage for %s.' % filename)
+        return
+    output = run_coverage_report(coverage_script, coverage_dir)
+    parse_full_coverage_output(output)
 
 
 def jump_to_next():

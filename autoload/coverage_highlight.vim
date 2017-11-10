@@ -10,6 +10,10 @@ function! coverage_highlight#highlight(arg)
     exec s:python "coverage_highlight.highlight(vim.eval('a:arg'))"
 endf
 
+function! coverage_highlight#highlight_all()
+    exec s:python "coverage_highlight.highlight_all()"
+endf
+
 function! coverage_highlight#off()
     exec s:python "coverage_highlight.clear()"
 endf

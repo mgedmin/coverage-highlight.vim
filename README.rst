@@ -6,10 +6,10 @@ Vim plugin to highlight source code lines that lack test coverage.
 .. image:: screenshot.png
   :alt: Screenshot
 
-Currently supports only two different Python tools:
+Currently supports only these Python coverage tracking tools:
 
-- coverage.py
-- trace.py (obsolete)
+- `coverage.py <https://coverage.readthedocs.io/>`_
+- `trace.py <https://docs.python.org/2/library/trace.html>`_ (obsolete)
 
 
 Usage
@@ -49,6 +49,14 @@ Commands
     Report files are just source code files indented with the number of
     executions or '>>>>>>' for uncovered lines prepended at the left
     margin.
+
+:HighlightCoverageForAll
+    Highlight untested source lines for all files mentioned in the coverage
+    report.
+
+    Only works with ``coverage.py`` reports.
+
+    Skips files not currently loaded into buffers, due to a limitation of Vim.
 
 :HighlightCoverageOff
     Turns off coverage highlighting
