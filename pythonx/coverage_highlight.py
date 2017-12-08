@@ -125,6 +125,9 @@ class Signs(object):
                 first = last = sign['lnum']
             if sign['lnum'] >= line:
                 break
+        else:
+            if last is not None:
+                prev_range = (first, last)
         return prev_range
 
 
