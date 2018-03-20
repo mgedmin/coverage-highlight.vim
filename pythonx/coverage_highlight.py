@@ -92,7 +92,7 @@ class Signs(object):
 
     def __iter__(self):
         info = vim.bindeval('getbufinfo("%")')[0]
-        for sign in info['signs']:
+        for sign in info.get('signs', []):
             if sign['name'] == b'NoCoverage':
                 yield sign
 
@@ -300,7 +300,7 @@ def highlight(arg):
     if arg.endswith('.report'):
         parse_cover_file(arg)
     elif arg:
-        filename = vim.current.buffer.name
+        filename = os.path.relpath(vim.current.buffer.name)
         if '%' not in arg:
             # hack because our parser expects "nn%" before the line ranges
             fake_output = filename + ' % ' + arg
