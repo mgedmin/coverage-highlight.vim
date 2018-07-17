@@ -4,7 +4,7 @@ if !has("python") && !has("python3")
 endif
 
 let s:python = has('python3') ? 'python3' : 'python'
-exec s:python "import coverage_highlight"
+exec s:python "import vim, coverage_highlight"
 
 function! coverage_highlight#highlight(arg)
     exec s:python "coverage_highlight.highlight(vim.eval('a:arg'))"
