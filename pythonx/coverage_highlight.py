@@ -63,9 +63,9 @@ class Signs(object):
         if buf is None:
             buf = vim.current.buffer
         self.bufferid = buf.number
-        if 'coverage_signs' not in buf.vars:
-            buf.vars['coverage_signs'] = []
-        self.signs = buf.vars['coverage_signs']
+        if 'coverage-highlight.vim:coverage_signs' not in buf.vars:
+            buf.vars['coverage-highlight.vim:coverage_signs'] = []
+        self.signs = buf.vars['coverage-highlight.vim:coverage_signs']
         self.signid = max(self.signs) if self.signs else self.first_sign_id
 
     @classmethod
