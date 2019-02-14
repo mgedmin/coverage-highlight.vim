@@ -85,13 +85,16 @@ class Signs(object):
         cmd = "sign place %d line=%d name=%s buffer=%s" % (
             self.signid, lineno, name, self.bufferid)
         vim.command(cmd)
+        # vim.List has no .append()
         self.signs.extend([self.signid])
 
     def place_branch(self, src_lineno, dst_lineno):
         key = str(src_lineno)
+        # vim.Dictionary requires string keys
         if key not in self.branch_targets:
             self.branch_targets[key] = []
             self.place(src_lineno, name='NoBranchCoverage')
+        # vim.List has no .append()
         self.branch_targets[key].extend([dst_lineno])
 
     def get_branch_targets(self, lineno, default=None):
@@ -102,6 +105,9 @@ class Signs(object):
             cmd = "sign unplace %d" % sign
             vim.command(cmd)
         del self.signs[:]
+        # vim.Dictionary has no .clear()
+        while self.branch_targets:
+            self.branch_targets.popitem()
 
     def __iter__(self):
         info = vim.bindeval('getbufinfo("%")')[0]
