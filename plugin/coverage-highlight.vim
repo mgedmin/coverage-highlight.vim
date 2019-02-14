@@ -1,13 +1,14 @@
 " File: coverage-highlight.vim
 " Author: Marius Gedminas <marius@gedmin.as>
-" Version: 1.2
-" Last Modified: 2017-11-10
+" Version: 2.0
+" Last Modified: 2019-02-14
 
 if !exists("g:coverage_script")
     let g:coverage_script = ""
 endif
 
 sign define NoCoverage text=>> texthl=NoCoverage linehl=NoCoverage
+sign define NoBranchCoverage text=~> texthl=NoCoverage linehl=NoCoverage
 
 command! -nargs=* -complete=file -bar HighlightCoverage
             \ call coverage_highlight#highlight(<q-args>)

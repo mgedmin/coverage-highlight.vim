@@ -67,6 +67,9 @@ class Signs(object):
             buf.vars['coverage-highlight.vim:coverage_signs'] = []
         self.signs = buf.vars['coverage-highlight.vim:coverage_signs']
         self.signid = max(self.signs) if self.signs else self.first_sign_id
+        if 'coverage-highlight.vim:branch_targets' not in buf.vars:
+            buf.vars['coverage-highlight.vim:branch_targets'] = {}
+        self.branch_targets = buf.vars['coverage-highlight.vim:branch_targets']
 
     @classmethod
     def for_file(cls, filename):
@@ -77,12 +80,22 @@ class Signs(object):
             except (OSError, IOError):
                 pass
 
-    def place(self, lineno):
+    def place(self, lineno, name='NoCoverage'):
         self.signid += 1
-        cmd = "sign place %d line=%d name=NoCoverage buffer=%s" % (
-            self.signid, lineno, self.bufferid)
+        cmd = "sign place %d line=%d name=%s buffer=%s" % (
+            self.signid, lineno, name, self.bufferid)
         vim.command(cmd)
         self.signs.extend([self.signid])
+
+    def place_branch(self, src_lineno, dst_lineno):
+        key = str(src_lineno)
+        if key not in self.branch_targets:
+            self.branch_targets[key] = []
+            self.place(src_lineno, name='NoBranchCoverage')
+        self.branch_targets[key].extend([dst_lineno])
+
+    def get_branch_targets(self, lineno, default=None):
+        return self.branch_targets.get(str(lineno), default)
 
     def clear(self):
         for sign in self.signs:
@@ -93,7 +106,7 @@ class Signs(object):
     def __iter__(self):
         info = vim.bindeval('getbufinfo("%")')[0]
         for sign in info.get('signs', []):
-            if sign['name'] == b'NoCoverage':
+            if sign['name'] in (b'NoCoverage', b'NoBranchCoverage'):
                 yield sign
 
     def find_next_range(self, line):
@@ -235,6 +248,8 @@ def parse_lines(formatted_list, signs):
     for item in formatted_list.split(','):
         if '->' in item:
             # skip missed branches
+            src, dst = map(int, item.split('->'))
+            signs.place_branch(src, dst)
             continue
         if '-' in item:
             lo, hi = item.split('-')
@@ -367,3 +382,16 @@ def jump_to_prev():
     vim.command("normal! %dG" % first)
     vim.command("normal! %dG" % last)
     print("{}-{}".format(first, last) if first != last else first)
+
+
+def cursor_moved():
+    signs = Signs()
+    row, col = vim.current.window.cursor
+    targets = signs.get_branch_targets(row)
+    if targets:
+        print(
+            "Line %d: missing branch%s to %s" % (
+                row,
+                "es" if len(targets) > 1 else "",
+                ', '.join(map(str, targets)))
+        )

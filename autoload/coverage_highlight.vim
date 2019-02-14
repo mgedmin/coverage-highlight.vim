@@ -8,14 +8,27 @@ exec s:python "import vim, coverage_highlight"
 
 function! coverage_highlight#highlight(arg)
     exec s:python "coverage_highlight.highlight(vim.eval('a:arg'))"
+    augroup CovergeHighlight
+      au! * <buffer>
+      au CursorMoved <buffer> exec s:python "coverage_highlight.cursor_moved()"
+    augroup END
 endf
 
 function! coverage_highlight#highlight_all()
     exec s:python "coverage_highlight.highlight_all()"
+    augroup CovergeHighlight
+      au!
+      au CursorMoved * exec s:python "coverage_highlight.cursor_moved()"
+    augroup END
 endf
 
 function! coverage_highlight#off()
     exec s:python "coverage_highlight.clear()"
+    " bug: this disables coverage highlighting for one buffer only, but
+    " disables CusorMoved autocommands for all buffers
+    augroup CovergeHighlight
+      au!
+    augroup END
 endf
 
 function! coverage_highlight#next()
