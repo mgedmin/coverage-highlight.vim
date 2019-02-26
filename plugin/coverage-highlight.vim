@@ -1,7 +1,7 @@
 " File: coverage-highlight.vim
 " Author: Marius Gedminas <marius@gedmin.as>
-" Version: 2.0
-" Last Modified: 2019-02-14
+" Version: 2.1
+" Last Modified: 2019-02-26
 
 if !exists("g:coverage_script")
     let g:coverage_script = ""

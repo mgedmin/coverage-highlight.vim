@@ -98,7 +98,11 @@ class Signs(object):
         self.branch_targets[key].extend([dst_lineno])
 
     def get_branch_targets(self, lineno, default=None):
-        return self.branch_targets.get(str(lineno), default)
+        targets = self.branch_targets.get(str(lineno), default)
+        if targets and isinstance(targets[0], bytes) and str is not bytes:
+            # Python 3: vim's strings are bytestrings
+            targets = [s.decode('UTF-8', 'replace') for s in targets]
+        return targets
 
     def clear(self):
         for sign in self.signs:
@@ -254,8 +258,8 @@ def parse_lines(formatted_list, signs):
     for item in formatted_list.split(','):
         if '->' in item:
             # skip missed branches
-            src, dst = map(int, item.split('->'))
-            signs.place_branch(src, dst)
+            src, dst = item.split('->')
+            signs.place_branch(int(src), dst)
             continue
         if '-' in item:
             lo, hi = item.split('-')
@@ -287,6 +291,8 @@ def find_coverage_script():
 
 
 def find_coverage_file_for(filename):
+    if os.path.exists('.coverage'):
+        return '.'
     where = os.path.dirname(filename)
     while True:
         if os.path.exists(os.path.join(where, '.coverage')):
