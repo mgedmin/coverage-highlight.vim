@@ -219,6 +219,7 @@ def parse_coverage_output(output, filename):
         last_line = last_line[len(filename_no_ext) + 1:].lstrip()
         missing = last_line.rpartition('%')[-1]
         if missing and missing.strip():
+            signs.clear()
             parse_lines(missing, signs)
             signs.save()
     else:
