@@ -123,8 +123,7 @@ class Signs(object):
         }
 
     def __iter__(self):
-        # XXX: uhh why is it hardcoding % instead of using self.bufferid?
-        info = vim.bindeval('getbufinfo("%")')[0]
+        info = vim.bindeval('getbufinfo(%d)' % self.bufferid)[0]
         for sign in info.get('signs', []):
             if sign['name'] in (b'NoCoverage', b'NoBranchCoverage'):
                 yield sign
