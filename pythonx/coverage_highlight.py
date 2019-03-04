@@ -62,14 +62,26 @@ class Signs(object):
     def __init__(self, buf=None):
         if buf is None:
             buf = vim.current.buffer
+        self.buffer = buf
         self.bufferid = buf.number
-        if 'coverage-highlight.vim:coverage_signs' not in buf.vars:
-            buf.vars['coverage-highlight.vim:coverage_signs'] = []
-        self.signs = buf.vars['coverage-highlight.vim:coverage_signs']
+        # convert vim.List() to a regular list
+        self.signs = list(buf.vars.get(
+            'coverage-highlight.vim:coverage_signs', []))
         self.signid = max(self.signs) if self.signs else self.first_sign_id
-        if 'coverage-highlight.vim:branch_targets' not in buf.vars:
-            buf.vars['coverage-highlight.vim:branch_targets'] = {}
-        self.branch_targets = buf.vars['coverage-highlight.vim:branch_targets']
+        # convert vim.Dictionary() to a regular dictionary
+        # convert keys to ints (vim.Dictionary() only allows string keys)
+        # convert values from vim.List() to regular lists
+        # convert list values from bytes to unicode (on Python 3)
+        self.branch_targets = {
+            int(line): [
+                target.decode('UTF-8')
+                if isinstance(target, bytes) and bytes is not str
+                else target
+                for target in targets
+            ]
+            for line, targets in buf.vars.get(
+                'coverage-highlight.vim:branch_targets', {}).items()
+        }
 
     @classmethod
     def for_file(cls, filename):
@@ -85,35 +97,33 @@ class Signs(object):
         cmd = "sign place %d line=%d name=%s buffer=%s" % (
             self.signid, lineno, name, self.bufferid)
         vim.command(cmd)
-        # vim.List has no .append()
-        self.signs.extend([self.signid])
+        self.signs.append(self.signid)
 
     def place_branch(self, src_lineno, dst_lineno):
-        key = str(src_lineno)
-        # vim.Dictionary requires string keys
-        if key not in self.branch_targets:
-            self.branch_targets[key] = []
+        if src_lineno not in self.branch_targets:
+            self.branch_targets[src_lineno] = []
             self.place(src_lineno, name='NoBranchCoverage')
-        # vim.List has no .append()
-        self.branch_targets[key].extend([dst_lineno])
+        self.branch_targets[src_lineno].append(dst_lineno)
 
     def get_branch_targets(self, lineno, default=None):
-        targets = self.branch_targets.get(str(lineno), default)
-        if targets and isinstance(targets[0], bytes) and str is not bytes:
-            # Python 3: vim's strings are bytestrings
-            targets = [s.decode('UTF-8', 'replace') for s in targets]
-        return targets
+        return self.branch_targets.get(lineno, default)
 
     def clear(self):
         for sign in self.signs:
             cmd = "sign unplace %d" % sign
             vim.command(cmd)
-        del self.signs[:]
-        # vim.Dictionary has no .clear()
-        while self.branch_targets:
-            self.branch_targets.popitem()
+        self.signs = []
+        self.branch_targets = {}
+
+    def save(self):
+        self.buffer.vars['coverage-highlight.vim:coverage_signs'] = self.signs
+        self.buffer.vars['coverage-highlight.vim:branch_targets'] = {
+            str(lineno): targets
+            for lineno, targets in self.branch_targets.items()
+        }
 
     def __iter__(self):
+        # XXX: uhh why is it hardcoding % instead of using self.bufferid?
         info = vim.bindeval('getbufinfo("%")')[0]
         for sign in info.get('signs', []):
             if sign['name'] in (b'NoCoverage', b'NoBranchCoverage'):
@@ -172,6 +182,7 @@ def parse_cover_file(filename):
         for lineno, line in enumerate(f, 1):
             if line.startswith('>>>>>>'):
                 signs.place(lineno)
+    signs.save()
 
 
 def parse_coverage_output(output, filename):
@@ -210,6 +221,7 @@ def parse_coverage_output(output, filename):
         missing = last_line.rpartition('%')[-1]
         if missing and missing.strip():
             parse_lines(missing, signs)
+            signs.save()
     else:
         print("Got confused by %s" % repr(last_line))
         print("Expected it to start with %s" % repr(filename_no_ext + ' '))
@@ -251,6 +263,7 @@ def parse_full_coverage_output(output):
         missing = line.rpartition('%')[-1]
         if missing and missing.strip():
             parse_lines(missing, signs)
+        signs.save()
 
 
 @lazyredraw
@@ -320,6 +333,7 @@ def run_coverage_report(coverage_script, coverage_dir, args=[]):
 def clear():
     signs = Signs()
     signs.clear()
+    signs.save()
 
 
 def highlight(arg):
