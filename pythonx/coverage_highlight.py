@@ -324,7 +324,9 @@ def run_coverage_report(coverage_script, coverage_dir, args=[]):
     else:
         command = shlex.split(coverage_script)
     output = subprocess.Popen(command + ['report', '-m'] + args,
-                              stdout=subprocess.PIPE, cwd=coverage_dir).communicate()[0]
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT,
+                              cwd=coverage_dir).communicate()[0]
     if not isinstance(output, str):
         output = output.decode('UTF-8', 'replace')
     return output
