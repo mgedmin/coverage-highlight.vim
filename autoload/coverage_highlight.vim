@@ -43,17 +43,22 @@ function! coverage_highlight#define_highlights()
     if &background == 'dark'
         if &t_Co >= 256
             highlight NoCoverageDefault ctermbg=52 guibg=#5f0000
+            highlight link NoBranchCoverageDefault NoCoverageDefault
         else
             highlight NoCoverageDefault ctermbg=darkred guibg=#5f0000
+            highlight link NoBranchCoverageDefault NoCoverageDefault
         endif
     else
         if &t_Co >= 256
             highlight NoCoverageDefault ctermbg=224 guibg=#ffcccc
+            highlight NoBranchCoverageDefault ctermbg=223 guibg=#ffcccc
         else
             highlight NoCoverageDefault ctermbg=gray guibg=#ffcccc
+            highlight link NoBranchCoverageDefault NoCoverageDefault
         endif
     endif
     highlight default link NoCoverage NoCoverageDefault
+    highlight default link NoBranchCoverage NoBranchCoverageDefault
 endf
 
 call coverage_highlight#define_highlights()
