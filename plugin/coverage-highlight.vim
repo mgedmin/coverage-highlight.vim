@@ -14,6 +14,7 @@ command! -nargs=* -complete=file -bar HighlightCoverage
             \ call coverage_highlight#highlight(<q-args>)
 command! -bar HighlightCoverageForAll call coverage_highlight#highlight_all()
 command! -bar HighlightCoverageOff call coverage_highlight#off()
+command! -bar ToggleCoverage call coverage_highlight#toggle()
 
 command! -bar NextUncovered call coverage_highlight#next()
 command! -bar PrevUncovered call coverage_highlight#prev()

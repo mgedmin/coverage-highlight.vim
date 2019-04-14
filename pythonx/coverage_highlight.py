@@ -338,7 +338,15 @@ def clear():
     signs.save()
 
 
-def highlight(arg):
+def toggle():
+    signs = Signs()
+    if signs.signs:
+        clear()
+    else:
+        highlight()
+
+
+def highlight(arg=''):
     clear()
     if arg.endswith('.report'):
         parse_cover_file(arg)

@@ -31,6 +31,12 @@ function! coverage_highlight#off()
     augroup END
 endf
 
+function! coverage_highlight#toggle()
+    exec s:python "coverage_highlight.toggle()"
+    " XXX: remove the cursor_moved autocommand?
+endf
+
+
 function! coverage_highlight#next()
     exec s:python "coverage_highlight.jump_to_next()"
 endf
