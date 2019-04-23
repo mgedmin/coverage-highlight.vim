@@ -360,6 +360,9 @@ def highlight(arg=''):
         parse_coverage_output(fake_output, filename)
     else:
         filename = vim.current.buffer.name
+        if not filename:
+            error("Current buffer has no name.")
+            return
         coverage_script = find_coverage_script()
         coverage_dir = find_coverage_file_for(filename)
         if coverage_script and coverage_dir:
