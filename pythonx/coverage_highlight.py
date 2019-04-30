@@ -264,6 +264,10 @@ def parse_full_coverage_output(output):
         if missing and missing.strip():
             parse_lines(missing, signs)
         signs.save()
+    for line in output:
+        if line.startswith('TOTAL'):
+            total = line.split()[-1]  # 'nn%'
+            print('Total coverage: {}'.format(total))
 
 
 @lazyredraw
