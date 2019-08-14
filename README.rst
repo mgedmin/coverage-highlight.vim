@@ -83,12 +83,13 @@ g:coverage_script
     directory.
 
 
-Highligh groups
----------------
+Highlight groups
+----------------
 
 If you want to change the highlighting, add this to your ``.vimrc``:
 
     highlight NoCoverage ctermbg=... guibg=...
+    highlight NoBranchCoverage ctermbg=... guibg=...
 
 with the colors you want.  See vim's ``:help cterm-colors`` and
 ``:help gui-colors`` for the color values to use.
@@ -103,10 +104,29 @@ You may want to add this to your ``.vimrc``::
   noremap ]C :<C-U>NextUncovered<CR>
 
 
+Status line
+-----------
+
+Add ``%{coverage_highlight#get_current()}`` to your 'statusline' to show the
+coverage percentage for the current file, updated when you run
+``:HighlightCoverage``.
+
+Add ``%{coverage_highlight#get_total()}`` to your 'statusline' to show the
+coverage percentage for the current project, updated when you run
+``:HighlightCoverageForAll``.
+
+You can pass a format string to either function to customize how the coverage
+is to be displayed.  The default is "%s%%".
+
+Example ::
+
+  set statusline=%<%f\ %h%m%r\ %1*%{coverage_highlight#get_current()}%*%=%-14.(%l,%c%V%)\ %P
+
+
 Requirements
 ------------
 
-Vim with Python/Python3 support.
+Vim 8.0.0251 or newer with Python or Python3 support.
 
 
 Copyright

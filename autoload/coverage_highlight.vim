@@ -2,6 +2,10 @@ if !has("python") && !has("python3")
     echoerr "coverage-highlight.vim needs vim with Python support"
     finish
 endif
+if !exists("*pyxeval")
+    echoerr "coverage-highlight.vim needs vim 8.0.0251 or newer"
+    finish
+endif
 
 let s:python = has('python3') ? 'python3' : 'python'
 exec s:python "import vim, coverage_highlight"
@@ -22,20 +26,42 @@ function! coverage_highlight#highlight_all()
     augroup END
 endf
 
+function! coverage_highlight#clean_up_autocommands()
+    let remaining = pyxeval("coverage_highlight.Signs.number_of_buffers_with_coverage()")
+    if remaining == 0
+        augroup CovergeHighlight
+          au!
+        augroup END
+    endif
+endf
+
 function! coverage_highlight#off()
     exec s:python "coverage_highlight.clear()"
-    " bug: this disables coverage highlighting for one buffer only, but
-    " disables CusorMoved autocommands for all buffers
-    augroup CovergeHighlight
-      au!
-    augroup END
+    call coverage_highlight#clean_up_autocommands()
 endf
 
 function! coverage_highlight#toggle()
     exec s:python "coverage_highlight.toggle()"
-    " XXX: remove the cursor_moved autocommand?
+    call coverage_highlight#clean_up_autocommands()
 endf
 
+function! coverage_highlight#get_total(...)
+    let format = a:0 >= 1 ? a:1 : '%s%%'
+    let coverage = pyxeval("coverage_highlight.Signs.get_total_coverage()")
+    if coverage != ""
+        let coverage = printf(format, coverage)
+    endif
+    return coverage
+endf
+
+function! coverage_highlight#get_current(...)
+    let format = a:0 >= 1 ? a:1 : '%s%%'
+    let coverage = pyxeval("coverage_highlight.Signs().get_file_coverage()")
+    if coverage != ""
+        let coverage = printf(format, coverage)
+    endif
+    return coverage
+endf
 
 function! coverage_highlight#next()
     exec s:python "coverage_highlight.jump_to_next()"

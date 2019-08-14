@@ -84,6 +84,15 @@ class Signs(object):
         }
 
     @classmethod
+    def number_of_buffers_with_coverage(cls):
+        count = 0
+        for buf in vim.buffers:
+            signs = cls(buf)
+            if signs.signs or signs.get_file_coverage():
+                count += 1
+        return count
+
+    @classmethod
     def for_file(cls, filename):
         for buf in vim.buffers:
             try:
@@ -91,6 +100,24 @@ class Signs(object):
                     return cls(buf)
             except (OSError, IOError):
                 pass
+
+    def get_file_coverage(self):
+        return self.buffer.vars.get('coverage-highlight.vim:coverage', '')
+
+    def set_file_coverage(self, coverage):
+        if get_verbosity() >= 3:
+            print('FILE COVERAGE: %r' % coverage)
+        self.buffer.vars['coverage-highlight.vim:coverage'] = coverage
+
+    @staticmethod
+    def get_total_coverage():
+        return vim.vars.get('coverage-highlight.vim:total_coverage', '')
+
+    @staticmethod
+    def set_total_coverage(coverage):
+        if get_verbosity() >= 3:
+            print('TOTAL COVERAGE: %r' % coverage)
+        vim.vars['coverage-highlight.vim:total_coverage'] = coverage
 
     def place(self, lineno, name='NoCoverage'):
         self.signid += 1
@@ -184,6 +211,12 @@ def parse_cover_file(filename):
     signs.save()
 
 
+def parse_coverage_number(line):
+    # src/foo/bar/baz/qq/__init__     146    136    93%   170-177, 180-184
+    # we should return '93'
+    return line.rpartition('%')[0].rpartition(' ')[-1].rpartition('\t')[-1]
+
+
 def parse_coverage_output(output, filename):
     # Example output without branch coverage:
     # Name                          Stmts   Exec  Cover   Missing
@@ -217,6 +250,7 @@ def parse_coverage_output(output, filename):
         else:
             print(last_line[:truncate_to] + '...')
         last_line = last_line[len(filename_no_ext) + 1:].lstrip()
+        signs.set_file_coverage(parse_coverage_number(last_line))
         missing = last_line.rpartition('%')[-1]
         if missing and missing.strip():
             signs.clear()
@@ -240,6 +274,7 @@ def parse_full_coverage_output(output):
             print(line)
         if line.startswith('--------'):
             break
+    n_files = 0
     for line in output:
         if get_verbosity() >= 3:
             print(line)
@@ -259,15 +294,22 @@ def parse_full_coverage_output(output):
             continue
         if get_verbosity() >= 2:
             print(line)
+        n_files += 1
+        coverage = parse_coverage_number(line)
+        signs.set_file_coverage(coverage)
         signs.clear()
         missing = line.rpartition('%')[-1]
         if missing and missing.strip():
             parse_lines(missing, signs)
         signs.save()
+    total = ''
+    if n_files == 1:
+        total = coverage
     for line in output:
         if line.startswith('TOTAL'):
             total = line.split()[-1]  # 'nn%'
             print('Total coverage: {}'.format(total))
+    Signs.set_total_coverage(total.rstrip('%'))
 
 
 @lazyredraw
@@ -336,10 +378,13 @@ def run_coverage_report(coverage_script, coverage_dir, args=[]):
     return output
 
 
-def clear():
+def clear(clear_total=True):
     signs = Signs()
+    signs.set_file_coverage('')
     signs.clear()
     signs.save()
+    if clear_total:
+        signs.set_total_coverage('')
 
 
 def toggle():
@@ -351,7 +396,7 @@ def toggle():
 
 
 def highlight(arg=''):
-    clear()
+    clear(clear_total=False)
     if arg.endswith('.report'):
         parse_cover_file(arg)
     elif arg:
