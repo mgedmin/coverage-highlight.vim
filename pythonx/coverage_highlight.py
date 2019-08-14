@@ -155,7 +155,28 @@ class Signs(object):
             if sign['name'] in (b'NoCoverage', b'NoBranchCoverage'):
                 yield sign
 
+    def iter_ranges(self):
+        signs = iter(self)
+        first = last = None
+        for sign in signs:
+            if last is None:
+                first = last = sign['lnum']
+            elif sign['lnum'] == last + 1:
+                last += 1
+            else:
+                yield (first, last)
+                first = last = sign['lnum']
+        if last is not None:
+            yield (first, last)
+
+    def find_current_range(self, line):
+        for first, last in self.iter_ranges():
+            if first <= line <= last:
+                return first, last
+        return None
+
     def find_next_range(self, line):
+        # Rewrite using self.iter_ranges() maybe?
         signs = iter(self)
         for sign in signs:
             if sign['lnum'] == line:
@@ -171,6 +192,7 @@ class Signs(object):
         return first, last
 
     def find_prev_range(self, line):
+        # Rewrite using self.iter_ranges() maybe?
         signs = iter(self)
         prev_range = None
         first = last = None
@@ -447,6 +469,13 @@ def jump_to_next():
     row, col = vim.current.window.cursor
     next_range = signs.find_next_range(row)
     if next_range is None:
+        current_range = signs.find_current_range(row)
+        if current_range is not None:
+            # if we're at the very last range, jump to the last line
+            first, last = current_range
+            if row != last:
+                vim.command("normal! %dG" % last)
+                return
         print("No higlighted lines below cursor")
         return
     first, last = next_range
@@ -462,6 +491,13 @@ def jump_to_prev():
     row, col = vim.current.window.cursor
     prev_range = signs.find_prev_range(row)
     if prev_range is None:
+        current_range = signs.find_current_range(row)
+        if current_range is not None:
+            # if we're at the very first range, jump to the first line
+            first, last = current_range
+            if row != first:
+                vim.command("normal! %dG" % first)
+                return
         print("No higlighted lines above cursor")
         return
     first, last = prev_range
