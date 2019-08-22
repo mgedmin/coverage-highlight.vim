@@ -82,6 +82,9 @@ class Signs(object):
             for line, targets in buf.vars.get(
                 'coverage-highlight.vim:branch_targets', {}).items()
         }
+        self.last_row = buf.vars.get('coverage-highlight.vim:last_row', 0)
+        self.last_row_signs = list(buf.vars.get(
+            'coverage-highlight.vim:last_row_signs', []))
 
     @classmethod
     def number_of_buffers_with_coverage(cls):
@@ -119,12 +122,15 @@ class Signs(object):
             print('TOTAL COVERAGE: %r' % coverage)
         vim.vars['coverage-highlight.vim:total_coverage'] = coverage
 
-    def place(self, lineno, name='NoCoverage'):
+    def _place(self, signs, lineno, name):
         self.signid += 1
         cmd = "sign place %d line=%d name=%s buffer=%s" % (
             self.signid, lineno, name, self.bufferid)
         vim.command(cmd)
-        self.signs.append(self.signid)
+        signs.append(self.signid)
+
+    def place(self, lineno, name='NoCoverage'):
+        self._place(self.signs, lineno, name)
 
     def place_branch(self, src_lineno, dst_lineno):
         if src_lineno not in self.branch_targets:
@@ -135,12 +141,26 @@ class Signs(object):
     def get_branch_targets(self, lineno, default=None):
         return self.branch_targets.get(lineno, default)
 
+    def place_branch_target_signs(self, targets):
+        for lineno in targets:
+            # skip 'exit' and any possible future non-numeric targets
+            if str(lineno).isdigit():
+                self._place(self.last_row_signs, int(lineno),
+                            'NoBranchCoverageTarget')
+
     def clear(self):
         for sign in self.signs:
             cmd = "sign unplace %d" % sign
             vim.command(cmd)
         self.signs = []
         self.branch_targets = {}
+        self.clear_last_row_signs()
+
+    def clear_last_row_signs(self):
+        for sign in self.last_row_signs:
+            cmd = "sign unplace %d" % sign
+            vim.command(cmd)
+        self.last_row_signs = []
 
     def save(self):
         self.buffer.vars['coverage-highlight.vim:coverage_signs'] = self.signs
@@ -148,6 +168,13 @@ class Signs(object):
             str(lineno): targets
             for lineno, targets in self.branch_targets.items()
         }
+        self.save_last_row()
+
+    def save_last_row(self):
+        self.buffer.vars['coverage-highlight.vim:last_row'] = self.last_row
+        self.buffer.vars['coverage-highlight.vim:last_row_signs'] = (
+            self.last_row_signs
+        )
 
     def __iter__(self):
         info = vim.bindeval('getbufinfo(%d)' % self.bufferid)[0]
@@ -448,6 +475,7 @@ def highlight(arg=''):
                 parse_cover_file(filename)
             else:
                 error('Neither .coverage nor %s found.' % filename)
+    cursor_moved(force=True)
 
 
 def highlight_all():
@@ -462,6 +490,7 @@ def highlight_all():
         return
     output = run_coverage_report(coverage_script, coverage_dir)
     parse_full_coverage_output(output)
+    cursor_moved(force=True)
 
 
 def jump_to_next():
@@ -508,14 +537,19 @@ def jump_to_prev():
     print("{}-{}".format(first, last) if first != last else first)
 
 
-def cursor_moved():
+def cursor_moved(force=False):
     signs = Signs()
     row, col = vim.current.window.cursor
-    targets = signs.get_branch_targets(row)
-    if targets:
-        print(
-            "Line %d: missing branch%s to %s" % (
-                row,
-                "es" if len(targets) > 1 else "",
-                ', '.join(map(str, targets)))
-        )
+    if row != signs.last_row or force:
+        signs.clear_last_row_signs()
+        signs.last_row = row
+        targets = signs.get_branch_targets(row)
+        if targets:
+            print(
+                "Line %d: missing branch%s to %s" % (
+                    row,
+                    "es" if len(targets) > 1 else "",
+                    ', '.join(map(str, targets)))
+            )
+            signs.place_branch_target_signs(targets)
+        signs.save_last_row()
