@@ -415,8 +415,9 @@ def find_coverage_file_for(filename):
 def run_coverage_report(coverage_script, coverage_dir, args=[]):
     print("Running %s report -m %s" % (os.path.relpath(coverage_script), ' '.join(args)))
     if os.path.exists(coverage_script):
-        command = [coverage_script]
+        command = [os.path.abspath(coverage_script)]
     else:
+        # things like "python3 -m coverage"
         command = shlex.split(coverage_script)
     output = subprocess.Popen(command + ['report', '-m'] + args,
                               stdout=subprocess.PIPE,
