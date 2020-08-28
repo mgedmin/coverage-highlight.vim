@@ -7,9 +7,9 @@ if !exists("g:coverage_script")
     let g:coverage_script = ""
 endif
 
-sign define NoCoverage text=>> texthl=NoCoverage linehl=NoCoverage
-sign define NoBranchCoverage text=~> texthl=NoBranchCoverage linehl=NoBranchCoverage
-sign define NoBranchCoverageTarget text=>~ texthl=NoBranchCoverageTarget linehl=NoBranchCoverageTarget
+sign define NoCoverage text=↣ texthl=NoCoverage linehl=NoCoverage
+sign define NoBranchCoverage text=↦ texthl=NoBranchCoverage linehl=NoBranchCoverage
+sign define NoBranchCoverageTarget text=⇥ texthl=NoBranchCoverageTarget linehl=NoBranchCoverageTarget
 
 command! -nargs=* -complete=file -bar HighlightCoverage
             \ call coverage_highlight#highlight(<q-args>)
