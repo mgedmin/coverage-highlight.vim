@@ -266,6 +266,13 @@ def parse_coverage_number(line):
     return line.rpartition('%')[0].rpartition(' ')[-1].rpartition('\t')[-1]
 
 
+def get_echospace():
+    # The margin (12) was determined empirically as the smallest value
+    # that avoids a 'Press enter to continue...' message.
+    # v:echospace exists since vim 8.1.1913 and removes the need to guess.
+    return int(vim.eval('exists("v:echospace") ? v:echospace : &columns - 12'))
+
+
 def parse_coverage_output(output, filename):
     # Example output without branch coverage:
     # Name                          Stmts   Exec  Cover   Missing
@@ -291,13 +298,12 @@ def parse_coverage_output(output, filename):
         './' + filename_no_ext + ' ',
     )
     if last_line.startswith(expect_one_of):
-        # The margin (15) was determined empirically as the smallest value
-        # that avoids a 'Press enter to continue...' message
-        truncate_to = int(vim.eval('&columns')) - 15
+        # Truncate to avoid the 'Press enter to continue...' message
+        truncate_to = get_echospace()
         if len(last_line) <= truncate_to or get_verbosity() >= 1:
             print(last_line)
         else:
-            print(last_line[:truncate_to] + '...')
+            print(last_line[:truncate_to - 3] + '...')
         last_line = last_line[len(filename_no_ext) + 1:].lstrip()
         signs.set_file_coverage(parse_coverage_number(last_line))
         missing = last_line.rpartition('%')[-1]
