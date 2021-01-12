@@ -468,9 +468,12 @@ def highlight(arg=''):
         if not filename:
             error("Current buffer has no name.")
             return
-        coverage_script = find_coverage_script()
         coverage_dir = find_coverage_file_for(filename)
-        if coverage_script and coverage_dir:
+        if coverage_dir:
+            coverage_script = find_coverage_script()
+            if not coverage_script:
+                error("Could not find the 'coverage' script.")
+                return
             relfilename = os.path.relpath(filename, coverage_dir)
             output = run_coverage_report(coverage_script, coverage_dir, [relfilename])
             parse_coverage_output(output, relfilename)
