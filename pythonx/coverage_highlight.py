@@ -287,7 +287,6 @@ def parse_coverage_output(output, filename):
     if not output:
         print("Got no output!")
         return
-    last_line = output.splitlines()[-1]
     filename = os.path.relpath(filename)
     filename_no_ext = os.path.splitext(filename)[0]
     signs = Signs()
@@ -297,22 +296,24 @@ def parse_coverage_output(output, filename):
         filename_no_ext + ' ',
         './' + filename_no_ext + ' ',
     )
-    if last_line.startswith(expect_one_of):
-        # Truncate to avoid the 'Press enter to continue...' message
-        truncate_to = get_echospace()
-        if len(last_line) <= truncate_to or get_verbosity() >= 1:
-            print(last_line)
-        else:
-            print(last_line[:truncate_to - 3] + '...')
-        last_line = last_line[len(filename_no_ext) + 1:].lstrip()
-        signs.set_file_coverage(parse_coverage_number(last_line))
-        missing = last_line.rpartition('%')[-1]
-        if missing and missing.strip():
-            signs.clear()
-            parse_lines(missing, signs)
-            signs.save()
+    for line in output.splitlines():
+        if line.startswith(expect_one_of):
+            # Truncate to avoid the 'Press enter to continue...' message
+            truncate_to = get_echospace()
+            if len(line) <= truncate_to or get_verbosity() >= 1:
+                print(line)
+            else:
+                print(line[:truncate_to - 3] + '...')
+            line = line[len(filename_no_ext) + 1:].lstrip()
+            signs.set_file_coverage(parse_coverage_number(line))
+            missing = line.rpartition('%')[-1]
+            if missing and missing.strip():
+                signs.clear()
+                parse_lines(missing, signs)
+                signs.save()
+            break
     else:
-        print("Got confused by %s" % repr(last_line))
+        print("Failed to parse coverage report!")
         print("Expected it to start with %s" % repr(filename_no_ext + ' '))
         print("Full output:")
         print(output)
