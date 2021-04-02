@@ -1,6 +1,6 @@
 " File: coverage-highlight.vim
 " Author: Marius Gedminas <marius@gedmin.as>
-" Version: 3.3.1
+" Version: 3.4
 " Last Modified: 2021-04-02
 " Contributors: Louis Cochen <louis.cochen@protonmail.ch>
 
