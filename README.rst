@@ -74,7 +74,7 @@ Settings
 g:coverage_script
     Default: "" (which means autodetect)
 
-    Name of the script that can produce reports. Example: ::
+    Name of the script that can produce reports. Example::
 
         let g:coverage_script = 'python3 -m coverage'
 
@@ -91,7 +91,7 @@ g:coverage_sign_branch
 g:coverage_sign_branch_target
     Default: "⇥"
 
-    Signs used in sign_column (empty string allowed). Example: ::
+    Signs used in sign_column (empty string allowed). Example::
 
         let g:coverage_sign = '#'
         let g:coverage_sign_branch_target = ''
@@ -100,11 +100,11 @@ g:coverage_sign_branch_target
 Highlight groups
 ----------------
 
-If you want to change the highlighting, add this to your ``.vimrc``: ::
+If you want to change the highlighting, add this to your ``.vimrc``::
 
-   highlight NoCoverage ctermbg=... guibg=...
-   highlight NoBranchCoverage ctermbg=... guibg=...
-   highlight NoBranchCoverageTarget ctermbg=... guibg=...
+  highlight NoCoverage ctermbg=... guibg=...
+  highlight NoBranchCoverage ctermbg=... guibg=...
+  highlight NoBranchCoverageTarget ctermbg=... guibg=...
 
 with the colors you want.  See vim's ``:help cterm-colors`` and
 ``:help gui-colors`` for the color values to use.
@@ -147,5 +147,6 @@ Vim 8.0.0251 or newer with Python or Python3 support.
 Copyright
 ---------
 
-``coverage-highlight.vim`` was written by Marius Gedminas <marius@gedmin.as>.
+``coverage-highlight.vim`` was written by Marius Gedminas <marius@gedmin.as>
+and contributors.
 Licence: MIT.
