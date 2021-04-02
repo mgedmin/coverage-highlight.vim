@@ -1,15 +1,35 @@
 " File: coverage-highlight.vim
 " Author: Marius Gedminas <marius@gedmin.as>
-" Version: 3.3
-" Last Modified: 2021-02-04
+" Version: 3.3.1
+" Last Modified: 2021-04-02
+" Contributors: Louis Cochen <louis.cochen@protonmail.ch>
 
-if !exists("g:coverage_script")
-    let g:coverage_script = ""
+let g:coverage_script = get(g:, 'coverage_script', '')
+
+let g:coverage_sign = get(g:, 'coverage_sign', '↣')
+let g:coverage_sign_branch = get(g:, 'coverage_sign_branch', '↦')
+let g:coverage_sign_branch_target = get(g:, 'coverage_sign_branch_target', '⇥')
+
+if g:coverage_sign == ''
+  sign define NoCoverage linehl=NoCoverage
+else
+  execute 'sign define NoCoverage text=' . g:coverage_sign
+        \ . ' texthl=NoCoverage linehl=NoCoverage'
 endif
 
-sign define NoCoverage text=↣ texthl=NoCoverage linehl=NoCoverage
-sign define NoBranchCoverage text=↦ texthl=NoBranchCoverage linehl=NoBranchCoverage
-sign define NoBranchCoverageTarget text=⇥ texthl=NoBranchCoverageTarget linehl=NoBranchCoverageTarget
+if g:coverage_sign_branch == ''
+  sign define NoBranchCoverage linehl=NoBranchCoverage
+else
+  execute 'sign define NoBranchCoverage text=' . g:coverage_sign_branch
+        \ . ' texthl=NoBranchCoverage linehl=NoBranchCoverage'
+endif
+
+if g:coverage_sign_branch_target == ''
+  sign define NoBranchCoverageTarget linehl=NoBranchCoverageTarget
+else
+  execute 'sign define NoBranchCoverageTarget text=' . g:coverage_sign_branch_target
+        \ . ' texthl=NoBranchCoverageTarget linehl=NoBranchCoverageTarget'
+endif
 
 command! -nargs=* -complete=file -bar HighlightCoverage
             \ call coverage_highlight#highlight(<q-args>)
