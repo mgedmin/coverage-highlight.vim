@@ -203,40 +203,29 @@ class Signs(object):
         return None
 
     def find_next_range(self, line):
-        # Rewrite using self.iter_ranges() maybe?
-        signs = iter(self)
-        for sign in signs:
-            if sign['lnum'] == line:
-                line += 1
-            if sign['lnum'] > line:
-                break
-        else:
-            return None
-        first = last = sign['lnum']
-        for sign in signs:
-            if sign['lnum'] == last + 1:
-                last += 1
-        return first, last
+        first_range = None
+        for first, last in self.iter_ranges():
+            if first_range is None:
+                first_range = (first, last)
+            if line < first:
+                return (first, last)
+        if first_range is not None and first_range[1] < line:
+            return first_range
+        return None
 
     def find_prev_range(self, line):
-        # Rewrite using self.iter_ranges() maybe?
-        signs = iter(self)
         prev_range = None
-        first = last = None
-        for sign in signs:
-            if last is None:
-                first = last = sign['lnum']
-            elif sign['lnum'] == last + 1:
-                last += 1
-            else:
+        last_range = None
+        for first, last in self.iter_ranges():
+            if last < line:
                 prev_range = (first, last)
-                first = last = sign['lnum']
-            if sign['lnum'] >= line:
-                break
+            last_range = (first, last)
+        if prev_range is not None:
+            return prev_range
+        elif last_range is not None and line < last_range[0]:
+            return last_range
         else:
-            if last is not None:
-                prev_range = (first, last)
-        return prev_range
+            return None
 
 
 def lazyredraw(fn):
