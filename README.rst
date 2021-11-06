@@ -61,6 +61,9 @@ Commands
 :HighlightCoverageOff
     Turns off coverage highlighting
 
+:ToggleCoverage
+    Toggles coverage highlighting on and off
+
 :NextUncovered
     Jump to the next uncovered range of source lines
 
