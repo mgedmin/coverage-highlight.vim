@@ -516,7 +516,7 @@ def jump_to_next():
             if row != last:
                 vim.command("normal! %dG" % last)
                 return
-        print("No higlighted lines below cursor")
+        print("No highlighted lines below cursor")
         return
     first, last = next_range
     # jump to last line so it's visible, then jump back to 1st line
@@ -538,7 +538,7 @@ def jump_to_prev():
             if row != first:
                 vim.command("normal! %dG" % first)
                 return
-        print("No higlighted lines above cursor")
+        print("No highlighted lines above cursor")
         return
     first, last = prev_range
     # jump to first line so it's visible, then jump back to last line
