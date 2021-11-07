@@ -203,40 +203,26 @@ class Signs(object):
         return None
 
     def find_next_range(self, line):
-        # Rewrite using self.iter_ranges() maybe?
-        signs = iter(self)
-        for sign in signs:
-            if sign['lnum'] == line:
-                line += 1
-            if sign['lnum'] > line:
-                break
-        else:
-            return None
-        first = last = sign['lnum']
-        for sign in signs:
-            if sign['lnum'] == last + 1:
-                last += 1
-        return first, last
+        for first, last in self.iter_ranges():
+            if line < first:
+                return (first, last)
+        return None
 
     def find_prev_range(self, line):
-        # Rewrite using self.iter_ranges() maybe?
-        signs = iter(self)
         prev_range = None
-        first = last = None
-        for sign in signs:
-            if last is None:
-                first = last = sign['lnum']
-            elif sign['lnum'] == last + 1:
-                last += 1
-            else:
-                prev_range = (first, last)
-                first = last = sign['lnum']
-            if sign['lnum'] >= line:
-                break
-        else:
-            if last is not None:
+        for first, last in self.iter_ranges():
+            if last < line:
                 prev_range = (first, last)
         return prev_range
+
+    def find_first_range(self):
+        return next(self.iter_ranges(), None)
+
+    def find_last_range(self):
+        last_range = None
+        for first, last in self.iter_ranges():
+            last_range = first, last
+        return last_range
 
 
 def lazyredraw(fn):
@@ -510,14 +496,22 @@ def jump_to_next():
     next_range = signs.find_next_range(row)
     if next_range is None:
         current_range = signs.find_current_range(row)
-        if current_range is not None:
-            # if we're at the very last range, jump to the last line
-            first, last = current_range
-            if row != last:
-                vim.command("normal! %dG" % last)
+        if vim.eval("&wrapscan"):
+            next_range = signs.find_first_range()
+            if next_range is None:
+                print("No highlighted lines in buffer")
                 return
-        print("No highlighted lines below cursor")
-        return
+            elif next_range == current_range:
+                next_range = None
+        if next_range is None:
+            if current_range is not None:
+                # if we're at the very last range, jump to the last line
+                first, last = current_range
+                if row != last:
+                    vim.command("normal! %dG" % last)
+                    return
+            print("No highlighted lines below cursor")
+            return
     first, last = next_range
     # jump to last line so it's visible, then jump back to 1st line
     # (this does not always work the way I want but eh)
@@ -532,14 +526,22 @@ def jump_to_prev():
     prev_range = signs.find_prev_range(row)
     if prev_range is None:
         current_range = signs.find_current_range(row)
-        if current_range is not None:
-            # if we're at the very first range, jump to the first line
-            first, last = current_range
-            if row != first:
-                vim.command("normal! %dG" % first)
+        if vim.eval("&wrapscan"):
+            prev_range = signs.find_last_range()
+            if prev_range is None:
+                print("No highlighted lines in buffer")
                 return
-        print("No highlighted lines above cursor")
-        return
+            elif prev_range == current_range:
+                prev_range = None
+        if prev_range is None:
+            if current_range is not None:
+                # if we're at the very first range, jump to the first line
+                first, last = current_range
+                if row != first:
+                    vim.command("normal! %dG" % first)
+                    return
+            print("No highlighted lines above cursor")
+            return
     first, last = prev_range
     # jump to first line so it's visible, then jump back to last line
     # (this does not always work the way I want but eh)
