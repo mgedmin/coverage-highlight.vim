@@ -13,6 +13,14 @@ def get_verbosity():
     return int(vim.eval('&verbose'))
 
 
+def get_cmdheight():
+    return int(vim.eval('&cmdheight'))
+
+
+def get_wrapscan():
+    return int(vim.eval('&wrapscan'))
+
+
 def debug(msg):
     if get_verbosity() >= 2:
         print(msg)
@@ -406,7 +414,9 @@ def find_coverage_file_for(filename):
 
 
 def run_coverage_report(coverage_script, coverage_dir, args=[]):
-    print("Running %s report -m %s" % (os.path.relpath(coverage_script), ' '.join(args)))
+    if get_cmdheight() > 1 or get_verbosity() >= 1:
+        print("Running %s report -m %s" % (
+            os.path.relpath(coverage_script), ' '.join(args)))
     if os.path.exists(coverage_script):
         command = [os.path.abspath(coverage_script)]
     else:
@@ -496,7 +506,7 @@ def jump_to_next():
     next_range = signs.find_next_range(row)
     if next_range is None:
         current_range = signs.find_current_range(row)
-        if vim.eval("&wrapscan"):
+        if get_wrapscan():
             next_range = signs.find_first_range()
             if next_range is None:
                 print("No highlighted lines in buffer")
@@ -526,7 +536,7 @@ def jump_to_prev():
     prev_range = signs.find_prev_range(row)
     if prev_range is None:
         current_range = signs.find_current_range(row)
-        if vim.eval("&wrapscan"):
+        if get_wrapscan():
             prev_range = signs.find_last_range()
             if prev_range is None:
                 print("No highlighted lines in buffer")
