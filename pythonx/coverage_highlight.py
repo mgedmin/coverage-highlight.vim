@@ -504,6 +504,7 @@ def jump_to_next():
     signs = Signs()
     row, col = vim.current.window.cursor
     next_range = signs.find_next_range(row)
+    wrapped = False
     if next_range is None:
         current_range = signs.find_current_range(row)
         if get_wrapscan():
@@ -513,6 +514,8 @@ def jump_to_next():
                 return
             elif next_range == current_range:
                 next_range = None
+            else:
+                wrapped = True
         if next_range is None:
             if current_range is not None:
                 # if we're at the very last range, jump to the last line
@@ -524,16 +527,14 @@ def jump_to_next():
             return
     first, last = next_range
     # jump to last line so it's visible, then jump back to 1st line
-    # (this does not always work the way I want but eh)
-    vim.command("normal! %dG" % last)
-    vim.command("normal! %dG" % first)
-    print("{}-{}".format(first, last) if first != last else first)
+    jump_to_range(last, first, wrapped)
 
 
 def jump_to_prev():
     signs = Signs()
     row, col = vim.current.window.cursor
     prev_range = signs.find_prev_range(row)
+    wrapped = False
     if prev_range is None:
         current_range = signs.find_current_range(row)
         if get_wrapscan():
@@ -543,6 +544,8 @@ def jump_to_prev():
                 return
             elif prev_range == current_range:
                 prev_range = None
+            else:
+                wrapped = True
         if prev_range is None:
             if current_range is not None:
                 # if we're at the very first range, jump to the first line
@@ -554,10 +557,21 @@ def jump_to_prev():
             return
     first, last = prev_range
     # jump to first line so it's visible, then jump back to last line
+    jump_to_range(first, last, wrapped)
+
+
+def jump_to_range(first, last, wrapped):
+    # jump to first line so it's visible, then jump back to last line
     # (this does not always work the way I want but eh)
     vim.command("normal! %dG" % first)
     vim.command("normal! %dG" % last)
-    print("{}-{}".format(first, last) if first != last else first)
+    # force a redraw now, because if jumping caused scrolling, vim might
+    # shedule a redraw later and clear the message we want to display
+    vim.command("redraw")
+    # sort because sometimes first and last are swapped, in case I want to
+    # position the cursor at the beginning of the range
+    display = "{}-{}".format(*sorted([first, last])) if first != last else first
+    print("{}{}".format(display, " (wrapped)" if wrapped else ""))
 
 
 def cursor_moved(force=False):
