@@ -1,5 +1,5 @@
 """
-" HACK to fore-reload it from vim with :source %
+" HACK to force-reload it from vim with :source %
 pyx import sys; sys.modules.pop("coverage_highlight", None); import coverage_highlight
 finish
 """
@@ -381,9 +381,7 @@ def parse_lines(formatted_list, signs):
 
 def program_in_path(program):
     path = os.environ.get("PATH", os.defpath).split(os.pathsep)
-    path = [os.path.join(dir, program) for dir in path]
-    path = [True for file in path if os.path.isfile(file)]
-    return bool(path)
+    return any(os.path.isfile(os.path.join(dir, program)) for dir in path)
 
 
 def find_coverage_script():
