@@ -415,6 +415,8 @@ def run_coverage_report(coverage_script, coverage_dir, args=[]):
     if get_cmdheight() > 1 or get_verbosity() >= 1:
         print("Running %s report -m %s" % (
             os.path.relpath(coverage_script), ' '.join(args)))
+        if get_verbosity() >= 2:
+            print("in %s" % coverage_dir)
     if os.path.exists(coverage_script):
         command = [os.path.abspath(coverage_script)]
     else:
