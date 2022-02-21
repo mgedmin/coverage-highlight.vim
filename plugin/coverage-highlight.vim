@@ -1,7 +1,7 @@
 " File: coverage-highlight.vim
 " Author: Marius Gedminas <marius@gedmin.as>
-" Version: 3.4
-" Last Modified: 2021-04-02
+" Version: 3.5
+" Last Modified: 2022-02-21
 " Contributors: Louis Cochen <louis.cochen@protonmail.ch>
 
 let g:coverage_script = get(g:, 'coverage_script', '')

@@ -313,7 +313,7 @@ def parse_coverage_output(output, filename):
         print(output)
 
 
-def parse_full_coverage_output(output):
+def parse_full_coverage_output(output, coverage_dir):
     if not output and get_verbosity() >= 1:
         print("Got no output!")
         return
@@ -330,7 +330,7 @@ def parse_full_coverage_output(output):
             print(line)
         if line.startswith('--------'):
             break
-        filename = line.split()[0]
+        filename = os.path.relpath(os.path.join(coverage_dir, line.split()[0]))
         if not os.path.exists(filename):
             # this is unexpected
             if get_verbosity() >= 1:
@@ -496,7 +496,7 @@ def highlight_all():
         error('Could not find .coverage for %s.' % filename)
         return
     output = run_coverage_report(coverage_script, coverage_dir)
-    parse_full_coverage_output(output)
+    parse_full_coverage_output(output, coverage_dir)
     cursor_moved(force=True)
 
 
