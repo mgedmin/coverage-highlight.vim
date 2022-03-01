@@ -1,14 +1,20 @@
 " File: coverage-highlight.vim
 " Author: Marius Gedminas <marius@gedmin.as>
-" Version: 3.5
-" Last Modified: 2022-02-21
+" Version: 3.5.1
+" Last Modified: 2022-03-01
 " Contributors: Louis Cochen <louis.cochen@protonmail.ch>
 
 let g:coverage_script = get(g:, 'coverage_script', '')
 
-let g:coverage_sign = get(g:, 'coverage_sign', '↣')
-let g:coverage_sign_branch = get(g:, 'coverage_sign_branch', '↦')
-let g:coverage_sign_branch_target = get(g:, 'coverage_sign_branch_target', '⇥')
+if &encoding == 'utf-8'
+  let g:coverage_sign = get(g:, 'coverage_sign', '↣')
+  let g:coverage_sign_branch = get(g:, 'coverage_sign_branch', '↦')
+  let g:coverage_sign_branch_target = get(g:, 'coverage_sign_branch_target', '⇥')
+else
+  let g:coverage_sign = get(g:, 'coverage_sign', '>>')
+  let g:coverage_sign_branch = get(g:, 'coverage_sign_branch', '~>')
+  let g:coverage_sign_branch_target = get(g:, 'coverage_sign_branch_target', '>~')
+endif
 
 if g:coverage_sign == ''
   sign define NoCoverage linehl=NoCoverage

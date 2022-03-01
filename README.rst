@@ -86,13 +86,13 @@ g:coverage_script
     directory.
 
 g:coverage_sign
-    Default: "↣"
+    Default: "↣" (">>" on non-UTF-8 setups)
 
 g:coverage_sign_branch
-    Default: "↦"
+    Default: "↦" ("~>" on non-UTF-8 setups)
 
 g:coverage_sign_branch_target
-    Default: "⇥"
+    Default: "⇥" (">~" on non-UTF-8 setups)
 
     Signs used in sign_column (empty string allowed). Example::
 
