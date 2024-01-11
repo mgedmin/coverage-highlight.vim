@@ -400,6 +400,8 @@ def find_coverage_script():
 def find_coverage_file_for(filename):
     if os.path.exists('.coverage'):
         return '.'
+    elif os.path.exists('.tox/.coverage'):
+        return '.tox'
     where = os.path.dirname(filename)
     while True:
         if os.path.exists(os.path.join(where, '.coverage')):
@@ -422,7 +424,7 @@ def run_coverage_report(coverage_script, coverage_dir, args=[]):
     else:
         # things like "python3 -m coverage"
         command = shlex.split(coverage_script)
-    output = subprocess.Popen(command + ['report', '-m'] + args,
+    output = subprocess.Popen(command + ['report', '--no-skip-covered', '-m'] + args,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               cwd=coverage_dir).communicate()[0]
