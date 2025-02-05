@@ -85,6 +85,11 @@ g:coverage_script
     it looks for ``bin/coverage`` relative to the current working
     directory.
 
+g:coverage_script_args
+    Default: "--no-skip-covered"
+
+    Additional arguments to be passed to coverage report.
+
 g:coverage_sign
     Default: "↣" (">>" on non-UTF-8 setups)
 

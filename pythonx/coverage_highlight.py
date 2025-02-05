@@ -397,6 +397,10 @@ def find_coverage_script():
         return os.path.abspath('bin/coverage')
 
 
+def get_coverage_script_args():
+    return shlex.split(vim.eval('g:coverage_script_args'))
+
+
 def find_coverage_file_for(filename):
     if os.path.exists('.coverage'):
         return '.'
@@ -419,15 +423,16 @@ def run_coverage_report(coverage_script, coverage_dir, args=[]):
             os.path.relpath(coverage_script), ' '.join(args)))
         if get_verbosity() >= 2:
             print("in %s" % coverage_dir)
-    if os.path.exists(coverage_script):
+    if os.path.sep in coverage_script and os.path.exists(coverage_script):
         command = [os.path.abspath(coverage_script)]
     else:
         # things like "python3 -m coverage"
         command = shlex.split(coverage_script)
-    output = subprocess.Popen(command + ['report', '--no-skip-covered', '-m'] + args,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT,
-                              cwd=coverage_dir).communicate()[0]
+    output = subprocess.Popen(
+        command + ['report'] + get_coverage_script_args() + ['-m'] + args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=coverage_dir).communicate()[0]
     if not isinstance(output, str):
         output = output.decode('UTF-8', 'replace')
     return output

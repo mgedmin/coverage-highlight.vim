@@ -1,10 +1,11 @@
 " File: coverage-highlight.vim
 " Author: Marius Gedminas <marius@gedmin.as>
-" Version: 3.5.1
-" Last Modified: 2022-03-01
+" Version: 3.6.0
+" Last Modified: 2025-02-05
 " Contributors: Louis Cochen <louis.cochen@protonmail.ch>
 
 let g:coverage_script = get(g:, 'coverage_script', '')
+let g:coverage_script_args = get(g:, 'coverage_script_args', '--no-skip-covered')
 
 if &encoding == 'utf-8'
   let g:coverage_sign = get(g:, 'coverage_sign', '↣')
